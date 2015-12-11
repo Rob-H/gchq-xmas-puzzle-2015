@@ -2,7 +2,33 @@ package xmasPuzzle
 
 import scala.io.Source
 
+import java.awt.image.BufferedImage
+import java.awt.{Graphics2D,Color,Font,BasicStroke}
+import java.awt.geom._
+
 object Main {
+    def saveImageOf(board: Board) = {
+        val blockSize = 10;
+        val size = board.rows.length
+        val canvas = new BufferedImage(size * blockSize, size * blockSize, BufferedImage.TYPE_INT_RGB)         
+
+        val g = canvas.createGraphics()
+
+        // clear background
+        g.setColor(Color.WHITE)
+        g.fillRect(0, 0, canvas.getWidth, canvas.getHeight)    
+
+        for{
+            row <- 0 until size
+            col <- 0 until size
+        } {
+            if(board.cell(row, col)) g.setColor(Color.BLACK)  
+            else g.setColor(Color.WHITE)
+            g.fillRect(col * blockSize, row * blockSize, blockSize, blockSize)
+        }
+        javax.imageio.ImageIO.write(canvas, "png", new java.io.File("result.png"))
+    }
+
     def and(a:Seq[Boolean], b:Seq[Boolean]) = {
         a zip b map {case (aval, bval) => aval & bval}
     }
@@ -86,6 +112,7 @@ object Main {
        if (board.isValidFor(rowSpec, columnSpec)) {
            println("Finished: ") 
            println(board)
+           saveImageOf(board)
            return;
        }
        val newBoard = solverStep(board, rowSpec, columnSpec)
