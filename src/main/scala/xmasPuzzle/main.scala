@@ -59,7 +59,27 @@ object Main {
             if(all.length == 0) throw new Exception("oh no..")
             andOverSeq(all)
         }}
-        new Board(newColumns.transpose)
+
+        val newBoard = new Board(newColumns.transpose)
+        if(newBoard.toString == board.toString) {
+            val deffoNotFromRows = board.rows zip rowSpec map {case (row, spec) => {
+                val all = allPossiblePermutationsOf(spec, row)
+                val inverse = all.map(_.map(x => !x))
+                andOverSeq(inverse)
+            }}
+
+            val newFilteredColumns = newBoard.columns zip columnSpec zip deffoNotFromRows.transpose map {case ((column, spec), deffoNot) => {
+                val all = allPossiblePermutationsOf(spec, column)
+                val filtered = all.filter(perm => perm zip deffoNot forall {case (poss, deffoNot) => !(poss && deffoNot) })
+                andOverSeq(filtered)
+            }}
+
+            new Board(newFilteredColumns.transpose)
+
+        } else newBoard
+
+        //find things that it definitely can't be in rows
+        //apply that to columns and discount any permutations in columns
     }
 
     def solve(board:Board, rowSpec:Seq[String], columnSpec: Seq[String]):Unit = {
@@ -72,13 +92,6 @@ object Main {
        if (newBoard.toString == board.toString) {
            println("got as far as we can: ")
            println(board)
-           val listOfPossibilities = newBoard.rows zip rowSpec map {case (row, spec) => {
-               val all = allPossiblePermutationsOf(spec, row)
-               println(all.length)
-               all.length
-           }}
-           print("possibilities:")
-           println(listOfPossibilities.reduceLeft(_*_))
            return;
        }
        println("*" * 50)
