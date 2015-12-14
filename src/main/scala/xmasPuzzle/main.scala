@@ -2,21 +2,19 @@ package xmasPuzzle
 
 import scala.io.Source
 
+import scala.swing._
+
+import java.awt.geom._
 import java.awt.image.BufferedImage
 import java.awt.{Graphics2D,Color,Font,BasicStroke}
-import java.awt.geom._
 
-object Main {
-    def saveImageOf(board: Board) = {
-        val blockSize = 10;
+object boardDrawer {
+    val blockSize = 10
+    def drawBoard(g: Graphics2D)(board: Board) = {
         val size = board.rows.length
-        val canvas = new BufferedImage(size * blockSize, size * blockSize, BufferedImage.TYPE_INT_RGB)         
-
-        val g = canvas.createGraphics()
-
         // clear background
         g.setColor(Color.WHITE)
-        g.fillRect(0, 0, canvas.getWidth, canvas.getHeight)    
+        g.fillRect(0, 0, size * blockSize, size * blockSize)    
 
         for{
             row <- 0 until size
@@ -26,6 +24,44 @@ object Main {
             else g.setColor(Color.WHITE)
             g.fillRect(col * blockSize, row * blockSize, blockSize, blockSize)
         }
+    }
+}
+class QrCanvas(board: Board) extends Panel {
+    var currentBoard = board;
+
+    override def paintComponent(g: Graphics2D) {
+        boardDrawer.drawBoard(g)(currentBoard);    
+    }
+
+    def setBoard(board: Board) = {
+        currentBoard = board
+        repaint()
+    }
+}
+
+class UI(blockSize:Int, board:Board) extends MainFrame {
+    title = "GCHQ puzzle solver"
+    peer.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE)
+    preferredSize = new Dimension((25 * blockSize) + 20, (25 * blockSize) + 40)
+    val panel = new QrCanvas(board) 
+    contents = panel
+    def setBoard(board:Board) = {
+        panel.setBoard(board)
+    }
+
+}
+
+object Main {
+    val blockSize = 10;
+
+    def saveImageOf(board: Board) = {
+        val size = board.rows.length
+        val canvas = new BufferedImage(size * blockSize, size * blockSize, BufferedImage.TYPE_INT_RGB)         
+
+        val g = canvas.createGraphics()
+
+        boardDrawer.drawBoard(g)(board)
+
         javax.imageio.ImageIO.write(canvas, "png", new java.io.File("result.png"))
     }
 
@@ -103,27 +139,23 @@ object Main {
             new Board(newFilteredColumns.transpose)
 
         } else newBoard
-
-        //find things that it definitely can't be in rows
-        //apply that to columns and discount any permutations in columns
     }
 
-    def solve(board:Board, rowSpec:Seq[String], columnSpec: Seq[String]):Unit = {
+    def solve(boardPrinter: (Board) => Unit)(board:Board, rowSpec:Seq[String], columnSpec: Seq[String]):Unit = {
        if (board.isValidFor(rowSpec, columnSpec)) {
            println("Finished: ") 
-           println(board)
+           boardPrinter(board)
            saveImageOf(board)
            return;
        }
        val newBoard = solverStep(board, rowSpec, columnSpec)
        if (newBoard.toString == board.toString) {
            println("got as far as we can: ")
-           println(board)
+           boardPrinter(board)
            return;
        }
-       println("*" * 50)
-       println(board)
-       solve(newBoard, rowSpec, columnSpec)
+       boardPrinter(board)
+       solve(boardPrinter)(newBoard, rowSpec, columnSpec)
     }
 
 
@@ -135,7 +167,12 @@ object Main {
 
         var board = Helpers.createBoard(25, blocks.toList)
 
-        solve(board, rowSpec, columnSpec)
+        val ui = new UI(blockSize, board)
+        ui.visible = true
+
+        val jPanelPrinter = (x: Board) => {ui.setBoard(x)}
+
+        solve(jPanelPrinter)(board, rowSpec, columnSpec)
     }
 }
 
