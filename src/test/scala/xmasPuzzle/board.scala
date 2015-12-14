@@ -1,5 +1,5 @@
 import org.scalatest._
-import xmasPuzzle._
+import xmasPuzzle.solver._
 
 class BoardSpec extends FunSpec with Matchers with Inspectors{
     it("creates an empty board of correct size with no specification") {
@@ -70,14 +70,14 @@ class BoardSpec extends FunSpec with Matchers with Inspectors{
         val currentDefiniteBlocks = Array(true, true, false, true)
         val spec = "2 1"
 
-        Main.allPossiblePermutationsOf(spec, currentDefiniteBlocks).toList should equal (List(currentDefiniteBlocks.toList))
+        Solver.allPossiblePermutationsOf(spec, currentDefiniteBlocks).toList should equal (List(currentDefiniteBlocks.toList))
     }
 
     it("can find permuatations when it is not already in the configuration") {
         val currentDefiniteBlocks = Array(true, true, false, false, false)
         val spec = "2 1"
 
-        Main.allPossiblePermutationsOf(spec, currentDefiniteBlocks).toList.sortBy(_.toString) should equal (
+        Solver.allPossiblePermutationsOf(spec, currentDefiniteBlocks).toList.sortBy(_.toString) should equal (
             List(
                 List(true, true, false, true, false), 
                 List(true, true, false, false, true)
@@ -89,7 +89,7 @@ class BoardSpec extends FunSpec with Matchers with Inspectors{
         val currentDefiniteBlocks = Array(false, true, false, false, false)
         val spec = "2 1"
 
-        Main.allPossiblePermutationsOf(spec, currentDefiniteBlocks).toList.sortBy(_.toString) should equal (
+        Solver.allPossiblePermutationsOf(spec, currentDefiniteBlocks).toList.sortBy(_.toString) should equal (
             List(
                 List(true, true, false, true, false), 
                 List(true, true, false, false, true),
@@ -100,7 +100,7 @@ class BoardSpec extends FunSpec with Matchers with Inspectors{
     }
 
     it("can and stuff") {
-        Main.andOverSeq(List(List(true, true, true), List(true, false, true), List(true, true, false))).toList should equal (
+        Solver.andOverSeq(List(List(true, true, true), List(true, false, true), List(true, true, false))).toList should equal (
             List(true, false, false)
         )
     }
