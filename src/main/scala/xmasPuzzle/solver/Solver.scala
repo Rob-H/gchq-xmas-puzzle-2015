@@ -61,22 +61,20 @@ class Solver(progressReporter: (Board) => Unit) {
         }}
 
         val newBoard = new Board(newColumns.transpose)
-        if(newBoard.toString == board.toString) {
-            val deffoNotFromRows = board.rows zip rowSpec map {case (row, spec) => {
-                val all = Solver.allPossiblePermutationsOf(spec, row)
-                val inverse = all.map(_.map(x => !x))
-                Solver.andOverSeq(inverse)
-            }}
 
-            val newFilteredColumns = newBoard.columns zip columnSpec zip deffoNotFromRows.transpose map {case ((column, spec), deffoNot) => {
-                val all = Solver.allPossiblePermutationsOf(spec, column)
-                val filtered = all.filter(perm => perm zip deffoNot forall {case (poss, deffoNot) => !(poss && deffoNot) })
-                Solver.andOverSeq(filtered)
-            }}
+        val deffoNotFromRows = board.rows zip rowSpec map {case (row, spec) => {
+            val all = Solver.allPossiblePermutationsOf(spec, row)
+            val inverse = all.map(_.map(x => !x))
+            Solver.andOverSeq(inverse)
+        }}
 
-            new Board(newFilteredColumns.transpose)
+        val newFilteredColumns = newBoard.columns zip columnSpec zip deffoNotFromRows.transpose map {case ((column, spec), deffoNot) => {
+            val all = Solver.allPossiblePermutationsOf(spec, column)
+            val filtered = all.filter(perm => perm zip deffoNot forall {case (poss, deffoNot) => !(poss && deffoNot) })
+            Solver.andOverSeq(filtered)
+        }}
 
-        } else newBoard
+        new Board(newFilteredColumns.transpose)
     }
 
     def solve(board:Board, rowSpec:Seq[String], columnSpec: Seq[String]): Board = {
