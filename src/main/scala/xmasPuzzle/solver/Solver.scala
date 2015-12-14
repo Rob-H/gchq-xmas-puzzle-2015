@@ -48,42 +48,51 @@ object Solver {
 }
 
 class Solver(progressReporter: (Board) => Unit) {
-    def solverStep(board: Board, rowSpec:Seq[String], columnSpec: Seq[String]) = {
-        val newRows = board.rows zip rowSpec map {case (row, spec) => {
-            val all = Solver.allPossiblePermutationsOf(spec, row)
-            if(all.length == 0) throw new Exception("oh no..")
-            Solver.andOverSeq(all)
-        }}
-        val newColumns = newRows.transpose zip columnSpec map {case (column, spec) => {
-            val all = Solver.allPossiblePermutationsOf(spec, column)
-            if(all.length == 0) throw new Exception("oh no..")
-            Solver.andOverSeq(all)
-        }}
+    private def getDefiniteBlocks(definiteBlocks: Seq[Seq[Boolean]], specs: Seq[String]) = {
+        definiteBlocks zip specs map { case (blocks, spec) => Solver.andOverSeq(Solver.allPossiblePermutationsOf(spec, blocks)) }
+    }
 
-        val newBoard = new Board(newColumns.transpose)
+    private def solverStep(board: Board, rowSpec:Seq[String], columnSpec: Seq[String]) = {
+        val getDefiniteFromRows = (board: Board) => {
+            new Board(getDefiniteBlocks(board.rows, rowSpec)) 
+        }
 
-        val deffoNotFromRows = board.rows zip rowSpec map {case (row, spec) => {
-            val all = Solver.allPossiblePermutationsOf(spec, row)
-            val inverse = all.map(_.map(x => !x))
-            Solver.andOverSeq(inverse)
-        }}
+        val getDefiniteFromColumns = (board: Board) => {
+            new Board(getDefiniteBlocks(board.columns, columnSpec).transpose)
+        }
 
-        val newFilteredColumns = newBoard.columns zip columnSpec zip deffoNotFromRows.transpose map {case ((column, spec), deffoNot) => {
-            val all = Solver.allPossiblePermutationsOf(spec, column)
-            val filtered = all.filter(perm => perm zip deffoNot forall {case (poss, deffoNot) => !(poss && deffoNot) })
-            Solver.andOverSeq(filtered)
-        }}
+        val getDefiniteFromRowsAndColumns = (board: Board) => {
+            getDefiniteFromColumns(getDefiniteFromRows(board))
+        }
 
-        new Board(newFilteredColumns.transpose)
+        val getDefiniteFromColumnsBasedOnThoseRuledOutByRows = (board: Board) => {
+            val deffoNotFromRows = board.rows zip rowSpec map {case (row, spec) => {
+                val all = Solver.allPossiblePermutationsOf(spec, row)
+                val inverse = all.map(_.map(x => !x))
+                Solver.andOverSeq(inverse)
+            }}
+
+            val newFilteredColumns = board.columns zip columnSpec zip deffoNotFromRows.transpose map {case ((column, spec), deffoNot) => {
+                val all = Solver.allPossiblePermutationsOf(spec, column)
+                val filtered = all.filter(perm => perm zip deffoNot forall {case (poss, deffoNot) => !(poss && deffoNot) })
+                Solver.andOverSeq(filtered)
+            }}
+
+            new Board(newFilteredColumns.transpose)
+        }
+        val solvingTactics = Stream(getDefiniteFromRowsAndColumns, getDefiniteFromColumnsBasedOnThoseRuledOutByRows)
+        solvingTactics map (_(board)) find (_.toString != board.toString)
     }
 
     def solve(board:Board, rowSpec:Seq[String], columnSpec: Seq[String]): Board = {
-       progressReporter(board)
-       if (board.isValidFor(rowSpec, columnSpec)) board
-       else {
-           val newBoard = solverStep(board, rowSpec, columnSpec)
-           if (newBoard.toString == board.toString) throw new Exception("cannot solve sorry")
-           else solve(newBoard, rowSpec, columnSpec)
+        progressReporter(board)
+        if (board.isValidFor(rowSpec, columnSpec)) board
+        else {
+            val newBoard = solverStep(board, rowSpec, columnSpec)
+            newBoard match {
+                case Some(newBoard) => solve(newBoard, rowSpec, columnSpec)
+                case None => throw new Exception("cannot solve sorry")
+            }
        }
     } 
 }
