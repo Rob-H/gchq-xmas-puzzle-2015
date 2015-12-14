@@ -9,8 +9,7 @@ import java.awt.image.BufferedImage
 import java.awt.{Graphics2D,Color,Font,BasicStroke}
 
 object boardDrawer {
-    val blockSize = 10
-    def drawBoard(g: Graphics2D)(board: Board) = {
+    def drawBoard(g: Graphics2D, blockSize: Int)(board: Board) = {
         val size = board.rows.length
         // clear background
         g.setColor(Color.WHITE)
@@ -26,11 +25,12 @@ object boardDrawer {
         }
     }
 }
-class QrCanvas(board: Board) extends Panel {
+
+class QrCanvas(board: Board, blockSize: Int) extends Panel {
     var currentBoard = board;
 
     override def paintComponent(g: Graphics2D) {
-        boardDrawer.drawBoard(g)(currentBoard);    
+        boardDrawer.drawBoard(g, blockSize)(currentBoard);    
     }
 
     def setBoard(board: Board) = {
@@ -43,12 +43,11 @@ class UI(blockSize:Int, board:Board) extends MainFrame {
     title = "GCHQ puzzle solver"
     peer.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE)
     preferredSize = new Dimension((25 * blockSize) + 20, (25 * blockSize) + 40)
-    val panel = new QrCanvas(board) 
+    val panel = new QrCanvas(board, blockSize) 
     contents = panel
     def setBoard(board:Board) = {
         panel.setBoard(board)
     }
-
 }
 
 object Main {
@@ -60,7 +59,7 @@ object Main {
 
         val g = canvas.createGraphics()
 
-        boardDrawer.drawBoard(g)(board)
+        boardDrawer.drawBoard(g, blockSize)(board)
 
         javax.imageio.ImageIO.write(canvas, "png", new java.io.File("result.png"))
     }
