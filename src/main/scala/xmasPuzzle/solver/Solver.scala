@@ -74,14 +74,14 @@ class Solver(progressReporter: (Board) => Unit) {
 
             val newFilteredColumns = board.columns zip columnSpec zip deffoNotFromRows.transpose map {case ((column, spec), deffoNot) => {
                 val all = Solver.allPossiblePermutationsOf(spec, column)
-                val filtered = all.filter(perm => perm zip deffoNot forall {case (poss, deffoNot) => !(poss && deffoNot) })
+                val filtered = all filter (perm => perm zip deffoNot forall {case (poss, deffoNot) => !(poss && deffoNot) })
                 Solver.andOverSeq(filtered)
             }}
 
             new Board(newFilteredColumns.transpose)
         }
         val solvingTactics = Stream(getDefiniteFromRowsAndColumns, getDefiniteFromColumnsBasedOnThoseRuledOutByRows)
-        solvingTactics map (_(board)) find (_.toString != board.toString)
+        solvingTactics map (_(board)) find (_ != board)
     }
 
     def solve(board:Board, rowSpec:Seq[String], columnSpec: Seq[String]): Board = {

@@ -30,5 +30,10 @@ class Board(board: Seq[Seq[Boolean]]) {
         }
     }
 
+    override def equals(o: Any) = o match {
+        case that: Board => that.toString == toString
+        case _ => false
+    }
+
     override lazy val toString = rows.map(row => ("|" :: row.map(if(_) "*|" else " |").toList).mkString("")).mkString("\n")
 }
