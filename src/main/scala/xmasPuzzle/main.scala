@@ -9,7 +9,7 @@ object Main {
     val blockSize = 10;
 
     def saveImageOf(board: Board) = {
-        val size = board.rows.length
+        val size = board.size
         val canvas = new BufferedImage(size * blockSize, size * blockSize, BufferedImage.TYPE_INT_RGB)         
 
         val g = canvas.createGraphics()
@@ -22,8 +22,8 @@ object Main {
 
     def main(args: Array[String]) {
         val input = Source.fromInputStream(getClass.getResourceAsStream("/input.txt")).getLines.toList;
-        val columnSpec = (input take 25).toList
-        val rowSpec = (input drop 26 take 25).toList
+        val columnSpec = (input take 25).map(spec => spec.split(" ").toList.map(_.toInt)).toList
+        val rowSpec = (input drop 26 take 25).map(spec => spec.split(" ").toList.map(_.toInt)).toList        
         val blocks = input drop 52
 
         var board = Helpers.createBoard(25, blocks.toList)

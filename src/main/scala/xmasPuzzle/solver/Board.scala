@@ -6,8 +6,9 @@ class Board(board: Seq[Seq[Boolean]]) {
     val rows = board.toList
     val columns = board.transpose.toList
     def cell(x:Int, y:Int) = board(x)(y)
+    val size = rows.length
 
-    def isValidFor(rowSpec: Seq[String], columnSpec: Seq[String]) = {
+    def isValidFor(rowSpec: Seq[Seq[Int]], columnSpec: Seq[Seq[Int]]) = {
         def toSpec(actual: List[Seq[Boolean]]) = {
             actual.map(Helpers.singleToSpec).toList
         }
@@ -15,7 +16,6 @@ class Board(board: Seq[Seq[Boolean]]) {
     }
 
     def draw(g: Graphics2D, blockSize: Int) = {
-        val size = rows.length
         // clear background
         g.setColor(Color.WHITE)
         g.fillRect(0, 0, size * blockSize, size * blockSize)    

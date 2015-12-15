@@ -43,7 +43,7 @@ class BoardSpec extends FunSpec with Matchers with Inspectors{
             "2:2"
         ))
 
-        board.isValidFor(List("1", "1", "1"), List("1", "1", "1")) should be (true)
+        board.isValidFor(List(List(1), List(1), List(1)), List(List(1), List(1), List(1))) should be (true)
     }
 
     it("is not valid for non-valid simple square") {
@@ -53,7 +53,7 @@ class BoardSpec extends FunSpec with Matchers with Inspectors{
             "2:0"
         ))
 
-        board.isValidFor(List("1", "1", "1"), List("1", "1", "1")) should be (false)
+        board.isValidFor(List(List(1),List(1),List(1)), List(List(1),List(1),List(1))) should be (false)
     }
 
     it("is valid for valid simple square") {
@@ -63,19 +63,19 @@ class BoardSpec extends FunSpec with Matchers with Inspectors{
             "2:0"
         ))
 
-        board.isValidFor(List("1 1", "1", "1"), List("1 1", "1", "1")) should be (true)
+        board.isValidFor(List(List(1, 1),List(1),List(1)), List(List(1, 1),List(1),List(1))) should be (true)
     }
 
     it("can find permuatations when it's already in the configuration") {
         val currentDefiniteBlocks = Array(true, true, false, true)
-        val spec = "2 1"
+        val spec = List(2, 1)
 
         Solver.allPossiblePermutationsOf(spec, currentDefiniteBlocks).toList should equal (List(currentDefiniteBlocks.toList))
     }
 
     it("can find permuatations when it is not already in the configuration") {
         val currentDefiniteBlocks = Array(true, true, false, false, false)
-        val spec = "2 1"
+        val spec = List(2, 1)
 
         Solver.allPossiblePermutationsOf(spec, currentDefiniteBlocks).toList.sortBy(_.toString) should equal (
             List(
@@ -87,7 +87,7 @@ class BoardSpec extends FunSpec with Matchers with Inspectors{
 
     it("can find permutations when it is not already in the configuration, with less to go off") {
         val currentDefiniteBlocks = Array(false, true, false, false, false)
-        val spec = "2 1"
+        val spec = List(2, 1)
 
         Solver.allPossiblePermutationsOf(spec, currentDefiniteBlocks).toList.sortBy(_.toString) should equal (
             List(

@@ -1,12 +1,12 @@
 package xmasPuzzle.solver
 
 object Helpers {
-    def singleToSpec(single: Seq[Boolean]):String = {
+    def singleToSpec(single: Seq[Boolean]): List[Int] = {
         val upToFirst = single.dropWhile(x => !x)
         val afterFirst = upToFirst.dropWhile(x => x)
         val sizeOfBlock = (upToFirst.length - afterFirst.length)
-        if(sizeOfBlock > 0) (sizeOfBlock.toString + " " + singleToSpec(afterFirst)).trim
-        else ""
+        if(sizeOfBlock > 0) sizeOfBlock :: singleToSpec(afterFirst)
+        else Nil
     }
 
     def createBoard(size:Int, existingSquareSpec:Seq[String]) = {

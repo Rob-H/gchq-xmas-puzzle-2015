@@ -9,14 +9,13 @@ object Solver {
         seqs.transpose.map(_.forall(x => x))
     }
 
-    def allPossiblePermutationsOf(spec: String, currentDefiniteBlocks: Seq[Boolean]): Seq[Seq[Boolean]] = {
-        def minSize(specs: List[Int]) = specs.sum + specs.length - 1
+    def allPossiblePermutationsOf(specs: Seq[Int], currentDefiniteBlocks: Seq[Boolean]): Seq[Seq[Boolean]] = {
+        def minSize(specs: Seq[Int]) = specs.sum + specs.length - 1
 
-        if (Helpers.singleToSpec(currentDefiniteBlocks) == spec) List(currentDefiniteBlocks)
-        else if (currentDefiniteBlocks.length == 0 && spec.length == 0) List(Nil)
-        else if (spec.length == 0) List(List.fill(currentDefiniteBlocks.length)(false))
+        if (Helpers.singleToSpec(currentDefiniteBlocks) == specs) List(currentDefiniteBlocks)
+        else if (currentDefiniteBlocks.length == 0 && specs.length == 0) List(Nil)
+        else if (specs.length == 0) List(List.fill(currentDefiniteBlocks.length)(false))
         else {
-            val specs = spec.split(" ").map(_.toInt).toList
             if (currentDefiniteBlocks.length < minSize(specs)) Nil
             else {
                 val firstSpec :: theRest = specs
@@ -28,7 +27,7 @@ object Solver {
 
                 val everything = for {
                     possiblityPrefix <- myPossibilities
-                    suffixPossibility <- allPossiblePermutationsOf(theRest.mkString(" "), currentDefiniteBlocks.drop(possiblityPrefix.length + 1))
+                    suffixPossibility <- allPossiblePermutationsOf(theRest, currentDefiniteBlocks.drop(possiblityPrefix.length + 1))
                 } yield { 
                     if(suffixPossibility.length > 0) possiblityPrefix ++ List(false) ++ suffixPossibility 
                     else possiblityPrefix ++ List.fill(mySpace - possiblityPrefix.length)(false)
@@ -48,11 +47,11 @@ object Solver {
 }
 
 class Solver(progressReporter: (Board) => Unit) {
-    private def getDefiniteBlocks(definiteBlocks: Seq[Seq[Boolean]], specs: Seq[String]) = {
+    private def getDefiniteBlocks(definiteBlocks: Seq[Seq[Boolean]], specs: Seq[Seq[Int]]) = {
         definiteBlocks zip specs map { case (blocks, spec) => Solver.andOverSeq(Solver.allPossiblePermutationsOf(spec, blocks)) }
     }
 
-    private def solverStep(board: Board, rowSpec:Seq[String], columnSpec: Seq[String]) = {
+    private def solverStep(board: Board, rowSpec:Seq[Seq[Int]], columnSpec: Seq[Seq[Int]]) = {
         val getDefiniteFromRows = (board: Board) => {
             new Board(getDefiniteBlocks(board.rows, rowSpec)) 
         }
@@ -84,7 +83,7 @@ class Solver(progressReporter: (Board) => Unit) {
         solvingTactics map (_(board)) find (_ != board)
     }
 
-    def solve(board:Board, rowSpec:Seq[String], columnSpec: Seq[String]): Board = {
+    def solve(board:Board, rowSpec:Seq[Seq[Int]], columnSpec: Seq[Seq[Int]]): Board = {
         progressReporter(board)
         if (board.isValidFor(rowSpec, columnSpec)) board
         else {
